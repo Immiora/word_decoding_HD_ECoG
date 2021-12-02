@@ -1,6 +1,5 @@
 ### Speech decoding from ECoG project
 
-Python 3.8.5
-
-Dependances:
+Dependences:
+- python 3.8.5
 - pandas
