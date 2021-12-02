@@ -1,6 +1,7 @@
-/**
-!/.gitignore
-!/README.md
+/*
+!.gitignore
+!README.md
 !src/
-**/src/*
-!**/src/beh_exp
+src/*
+!src/beh_exp
+!src/beh_exp/*
