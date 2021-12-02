@@ -10,7 +10,6 @@ python beh_exp/make_gorilla_spreadsheet_word_identify.py \
 import argparse
 import os.path as op
 import pandas as pd
-import os
 import glob
 import random
 
@@ -36,7 +35,7 @@ def main(args):
     data = data.drop(data[data['display'] != ''].index)
 
     # load filenames of audio stimuli
-    wavs = [os.path.basename(i) for i in glob.glob(op.join(args.path_stim, '*.wav'))]
+    wavs = [op.basename(i) for i in glob.glob(op.join(args.path_stim, '*.wav'))]
 
     # take only names of reconstructions, target names are the same
     wavs_recon = [i for i in wavs if '_recon' in i]
