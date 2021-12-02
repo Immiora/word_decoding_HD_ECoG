@@ -2,4 +2,6 @@
 /*/
 !.gitignore
 !README.md
-!/src/beh_exp
+!/src/
+/src/**
+!/src/beh_exp/
