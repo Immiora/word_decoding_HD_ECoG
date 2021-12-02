@@ -43,12 +43,12 @@ def main(args):
     # extract correct word based on filenames
     ans = [i.replace('_recon', '_target') for i in wavs_recon]
 
-    # take random word of same number of syllables as second option
+    # take random subject of same sex
     sub = lambda x: int(x.split('sub-')[1].split('_')[0])
     rep = lambda x, y: x.replace('sub-' + x.split('sub-')[1].split('_')[0], 'sub-' + str(y))
     res2_ = [rep(i, d[d['sex']==d[d['id']==sub(i)]['sex'].values[0]]['id'].drop(d[d['id'] == sub(i)].index).sample().values[0])
                                                                                                         for i in ans]
-    # randomize place of correct word between res1 and res2 columns
+    # randomize place of correct response between res1 and res2 columns
     res1, res2 = zip(*[random.sample(sublist, 2) for sublist in zip(ans, res2_)])
 
     # put all info together
@@ -63,8 +63,9 @@ def main(args):
 
     # set randomise_trials to 1
     data['randomise_trials'] = 1
-    data['color_background_1'] = 'Yellow.001.jpeg'
-    data['color_background_2'] = 'Blue.001.jpeg'
+    # data['color_background_1'] = 'Yellow.001.jpeg'
+    # data['color_background_2'] = 'Blue.001.jpeg'
+
     # add End trial to the end
     data = data.append(pd.DataFrame({'display': ['End']}))
 

@@ -44,12 +44,15 @@ def main(args):
     # extract correct word based on filenames
     words = [i.split('word-')[1].split('_')[0] for i in wavs_opt]
 
+    # once for opt vs non-opt, another run for densenet/mlp/seq2seq
     for run in range(2):
 
         # take random word of same number of syllables as second option
         if run == 0:
+            # alternative response: non-optimized
             res2_ = [i.replace('opt-true', 'opt-false') for i in wavs_opt]
         else:
+            # alternative response: one of the other two models (densenet/mlp/seq2seq)
             sub = lambda x: x.split('mod-')[1].split('_')[0]
             rep = lambda x, y: x.replace('mod-' + x.split('mod-')[1].split('_')[0], 'mod-' + y)
             res2_ = [rep(i, d.drop(d[d['m'] == sub(i)].index).sample().values.flatten()[0])  for i in wavs_opt]
@@ -70,8 +73,9 @@ def main(args):
 
     # set randomise_trials to 1
     data['randomise_trials'] = 1
-    data['color_background_1'] = 'Yellow.001.jpeg'
-    data['color_background_2'] = 'Blue.001.jpeg'
+    # data['color_background_1'] = 'Yellow.001.jpeg'
+    # data['color_background_2'] = 'Blue.001.jpeg'
+
     # add End trial to the end
     data = data.append(pd.DataFrame({'display': ['End']}))
 
