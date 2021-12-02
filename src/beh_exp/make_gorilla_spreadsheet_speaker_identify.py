@@ -23,7 +23,7 @@ pd.set_option('display.width', 1000)
 
 def main(args):
 
-    # set options: different syllables across words
+    # set options: speakers of different sex
     d = pd.DataFrame({'id': list(range(1, 6)),
                             'sex': ['f', 'f', 'f', 'm', 'm']})
 
