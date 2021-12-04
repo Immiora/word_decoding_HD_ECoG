@@ -34,6 +34,7 @@ def main(args):
 
     # take only names of reconstructions, target names are the same
     wavs_recon = [i for i in wavs if '_recon' in i]
+    wavs_recon = [i.replace('.wav', '.mp3') for i in wavs_recon]
 
     # randomize order of stimuli
     wavs_opt = [i for i in wavs_recon if 'opt-true' in i]

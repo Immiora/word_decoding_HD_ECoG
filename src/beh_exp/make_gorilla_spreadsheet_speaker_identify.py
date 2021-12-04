@@ -39,28 +39,35 @@ def main(args):
     # take only names of reconstructions, target names are the same
     # wavs_recon = [i for i in wavs if '_recon' in i]
     wavs_recon = [i for i in wavs if 'opt-true_recon' in i]
+    wavs_recon = [i.replace('.wav', '.mp3') for i in wavs_recon]
 
     # randomize order of stimuli
     random.shuffle(wavs_recon)
 
     # extract correct word based on filenames
-    ans = [i.replace('_recon', '_target') for i in wavs_recon]
+    #ans = [i.replace('_recon', '_target') for i in wavs_recon]
+    tar1 = [i.replace('_recon', '_target') for i in wavs_recon]
+    ans = ['Speaker ' + i.split('sub-')[1].split('_')[0] for i in wavs_recon]
 
     # take random subject of same sex
     sub = lambda x: int(x.split('sub-')[1].split('_')[0])
     rep = lambda x, y: x.replace('sub-' + x.split('sub-')[1].split('_')[0], 'sub-' + str(y))
-    # res2_ = [rep(i, d[d['sex']==d[d['id']==sub(i)]['sex'].values[0]]['id'].drop(d[d['id'] == sub(i)].index).sample().values[0])
+    # tar2_ = [rep(i, d[d['sex']==d[d['id']==sub(i)]['sex'].values[0]]['id'].drop(d[d['id'] == sub(i)].index).sample().values[0])
     #                                                                                                    for i in ans]
-    res2_ = [rep(i, d.drop(d[d['id'] == sub(i)].index).sample()['id'].values[0]) for i in ans]
+    tar2_ = [rep(i, d.drop(d[d['id'] == sub(i)].index).sample()['id'].values[0]) for i in tar1]
 
 
     # randomize place of correct response between res1 and res2 columns
-    res1, res2 = zip(*[random.sample(sublist, 2) for sublist in zip(ans, res2_)])
+    tar1, tar2 = zip(*[random.sample(sublist, 2) for sublist in zip(tar1, tar2_)])
+    res1 = ['Speaker ' + i.split('sub-')[1].split('_')[0] for i in tar1]
+    res2 = ['Speaker ' + i.split('sub-')[1].split('_')[0] for i in tar2]
 
     # put all info together
     block = {'display': ['Q2 audio - audio'] * len(wavs_recon),
              'reconstructions_2': wavs_recon,
              'ans_2': ans,
+             'targets_2.1': tar1,
+             'targets_2.2': tar2,
              'res_2.1': res1,
              'res_2.2': res2}
 
