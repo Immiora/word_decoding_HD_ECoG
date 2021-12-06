@@ -76,8 +76,6 @@ def main(args):
 
     # set randomise_trials to 1
     data['randomise_trials'] = 1
-    # data['color_background_1'] = 'Yellow.001.jpeg'
-    # data['color_background_2'] = 'Blue.001.jpeg'
 
     # add End trial to the end
     data = data.append(pd.DataFrame({'display': ['End']}))

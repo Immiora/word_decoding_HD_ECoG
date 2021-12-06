@@ -3,7 +3,7 @@ Make spreadsheet for the behavioral experiment with Gorilla (.csv file)
 
 python beh_exp/make_gorilla_spreadsheet_model_compare.py \
     --path_csv /Fridge/users/julia/project_decoding_jip_janneke/data/beh_exp/spreadsheet_task3.csv \
-    --path_stim /Fridge/users/julia/project_decoding_jip_janneke/results/optuna/jip_janneke/beh_stimuli
+    --path_stim /Fridge/users/julia/project_decoding_jip_janneke/results/optuna_v1/jip_janneke/beh_stimuli
 
 '''
 
@@ -39,10 +39,12 @@ def main(args):
     # randomize order of stimuli
     wavs_opt = [i for i in wavs_recon if 'opt-true' in i]
     wavs_opt = random.sample(wavs_opt, len(wavs_opt))
-    ans = wavs_opt.copy()
+    #ans = ['Option ' + i.split('sub-')[1].split('_')[0] for i in wavs_recon]
+    tar1 = wavs_opt.copy()
 
     # extract correct word based on filenames
     words = [i.split('word-')[1].split('_')[0] for i in wavs_opt]
+    words= ['<p style="font-size: 300%;">' + i + '</p>' for i in words]
 
     # once for opt vs non-opt, another run for densenet/mlp/seq2seq
     for run in range(2):
@@ -50,21 +52,24 @@ def main(args):
         # take random word of same number of syllables as second option
         if run == 0:
             # alternative response: non-optimized
-            res2_ = [i.replace('opt-true', 'opt-false') for i in wavs_opt]
+            tar2_ = [i.replace('opt-true', 'opt-false') for i in wavs_opt]
         else:
             # alternative response: one of the other two models (densenet/mlp/seq2seq)
             sub = lambda x: x.split('mod-')[1].split('_')[0]
             rep = lambda x, y: x.replace('mod-' + x.split('mod-')[1].split('_')[0], 'mod-' + y)
-            res2_ = [rep(i, d.drop(d[d['m'] == sub(i)].index).sample().values.flatten()[0])  for i in wavs_opt]
+            tar2_ = [rep(i, d.drop(d[d['m'] == sub(i)].index).sample().values.flatten()[0])  for i in wavs_opt]
 
         # randomize place of correct word between res1 and res2 columns
-        res1, res2 = zip(*[random.sample(sublist, 2) for sublist in zip(ans, res2_)])
+        tar1, tar2 = zip(*[random.sample(sublist, 2) for sublist in zip(tar1, tar2_)])
+        res1 = ['Option 1'] * len(tar1)
+        res2 = ['Option 2'] * len(tar1)
 
         # put all info together
         block = {'display': ['Q3 evaluations'] * len(wavs_opt),
-                 'reconstructions_3': wavs_opt,
-                 'ans_3': ans,
+                 #'ans_3': ans,
                  'word_3': words,
+                 'reconstructions_3.1': tar1,
+                 'reconstructions_3.2': tar2,
                  'res_3.1': res1,
                  'res_3.2': res2}
 
@@ -73,8 +78,6 @@ def main(args):
 
     # set randomise_trials to 1
     data['randomise_trials'] = 1
-    # data['color_background_1'] = 'Yellow.001.jpeg'
-    # data['color_background_2'] = 'Blue.001.jpeg'
 
     # add End trial to the end
     data = data.append(pd.DataFrame({'display': ['End']}))
