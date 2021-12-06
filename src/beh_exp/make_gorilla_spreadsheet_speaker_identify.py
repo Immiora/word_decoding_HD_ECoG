@@ -3,7 +3,7 @@ Make spreadsheet for the behavioral experiment with Gorilla (.csv file)
 
 python beh_exp/make_gorilla_spreadsheet_speaker_identify.py \
     --path_csv /Fridge/users/julia/project_decoding_jip_janneke/data/beh_exp/spreadsheet_task2.csv \
-    --path_stim /Fridge/users/julia/project_decoding_jip_janneke/results/optuna/jip_janneke/beh_stimuli
+    --path_stim /Fridge/users/julia/project_decoding_jip_janneke/results/optuna_v1/jip_janneke/beh_stimuli
 
 Changes 2/12/2021:
     - only opt-true
@@ -38,7 +38,7 @@ def main(args):
 
     # take only names of reconstructions, target names are the same
     # wavs_recon = [i for i in wavs if '_recon' in i]
-    wavs_recon = [i for i in wavs if 'opt-true_recon' in i]
+    wavs_recon = [i for i in wavs if 'opt-true' in i]
     wavs_recon = [i.replace('.wav', '.mp3') for i in wavs_recon]
 
     # randomize order of stimuli
