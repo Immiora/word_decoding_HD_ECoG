@@ -72,8 +72,9 @@ def main(args):
     # set randomise_trials to 1
     data['randomise_trials'] = 1
 
-    # add End trial to the end
-    data = data.append(pd.DataFrame({'display': ['End']}))
+    # add start, instrucitons, end trials
+    data = pd.concat([data, pd.DataFrame({'display': ['End']})])
+    data = pd.concat([pd.DataFrame({'display': ['Start', 'Instructions text']}), data]) # add test audio for Start
 
     # save spreadsheet
     data.to_csv(args.path_csv.replace('.csv', '_full.csv'), na_rep='', sep=',', index=False)
