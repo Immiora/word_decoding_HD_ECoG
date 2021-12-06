@@ -39,7 +39,6 @@ def main(args):
     # randomize order of stimuli
     wavs_opt = [i for i in wavs_recon if 'opt-true' in i]
     wavs_opt = random.sample(wavs_opt, len(wavs_opt))
-    #ans = ['Option ' + i.split('sub-')[1].split('_')[0] for i in wavs_recon]
     tar1 = wavs_opt.copy()
 
     # extract correct word based on filenames
