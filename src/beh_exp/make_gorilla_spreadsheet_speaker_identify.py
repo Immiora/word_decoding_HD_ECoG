@@ -5,6 +5,9 @@ python beh_exp/make_gorilla_spreadsheet_speaker_identify.py \
     --path_csv /Fridge/users/julia/project_decoding_jip_janneke/data/beh_exp/spreadsheet_task2.csv \
     --path_stim /Fridge/users/julia/project_decoding_jip_janneke/results/optuna_v1/jip_janneke/beh_stimuli
 
+Changes 15/12/2021:
+    - Dutch words for options
+
 Changes 2/12/2021:
     - only opt-true
     - relax constraint on same-syllable for alternative answer option
@@ -47,7 +50,7 @@ def main(args):
     # extract correct word based on filenames
     #ans = [i.replace('_recon', '_target') for i in wavs_recon]
     tar1 = [i.replace('_recon', '_target') for i in wavs_recon]
-    ans = ['Speaker ' + i.split('sub-')[1].split('_')[0] for i in wavs_recon]
+    ans = ['Spreker ' + i.split('sub-')[1].split('_')[0] for i in wavs_recon]
 
     # take random subject of same sex
     sub = lambda x: int(x.split('sub-')[1].split('_')[0])
@@ -59,8 +62,8 @@ def main(args):
 
     # randomize place of correct response between res1 and res2 columns
     tar1, tar2 = zip(*[random.sample(sublist, 2) for sublist in zip(tar1, tar2_)])
-    res1 = ['Speaker ' + i.split('sub-')[1].split('_')[0] for i in tar1]
-    res2 = ['Speaker ' + i.split('sub-')[1].split('_')[0] for i in tar2]
+    res1 = ['Spreker ' + i.split('sub-')[1].split('_')[0] for i in tar1]
+    res2 = ['Spreker ' + i.split('sub-')[1].split('_')[0] for i in tar2]
 
     # put all info together
     block = {'display': ['Q2 audio - audio'] * len(wavs_recon),
@@ -79,7 +82,8 @@ def main(args):
 
     # add start, instrucitons, end trials
     data = pd.concat([data, pd.DataFrame({'display': ['End']})])
-    data = pd.concat([pd.DataFrame({'display': ['Start', 'Instructions text']}), data]) # add test audio for Start
+    data = pd.concat([pd.DataFrame({'display': ['Start', 'Instructions audio'],
+                                    'test': [random.sample(wavs_recon, 1)[0].replace('recon', 'target'), None]}), data]) # add test audio for Start
 
     # save spreadsheet
     data.to_csv(args.path_csv.replace('.csv', '_full.csv'), na_rep='', sep=',', index=False)

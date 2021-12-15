@@ -5,6 +5,9 @@ python beh_exp/make_gorilla_spreadsheet_model_compare.py \
     --path_csv /Fridge/users/julia/project_decoding_jip_janneke/data/beh_exp/spreadsheet_task3.csv \
     --path_stim /Fridge/users/julia/project_decoding_jip_janneke/results/optuna_v1/jip_janneke/beh_stimuli
 
+Changes 15/12/2021:
+    - Dutch words for options
+
 '''
 
 import argparse
@@ -60,8 +63,8 @@ def main(args):
 
         # randomize place of correct word between res1 and res2 columns
         tar1, tar2 = zip(*[random.sample(sublist, 2) for sublist in zip(tar1, tar2_)])
-        res1 = ['Option 1'] * len(tar1)
-        res2 = ['Option 2'] * len(tar1)
+        res1 = ['Optie 1'] * len(tar1)
+        res2 = ['Optie 2'] * len(tar1)
 
         # put all info together
         block = {'display': ['Q3 evaluations'] * len(wavs_opt),
@@ -80,7 +83,8 @@ def main(args):
 
     # add start, instrucitons, end trials
     data = pd.concat([data, pd.DataFrame({'display': ['End']})])
-    data = pd.concat([pd.DataFrame({'display': ['Start', 'Instructions text']}), data]) # add test audio for Start
+    data = pd.concat([pd.DataFrame({'display': ['Start', 'Instructions evaluations'],
+                                    'test': [random.sample(wavs_recon, 1)[0].replace('recon', 'target'), None]}), data]) # add test audio for Start
 
     # save spreadsheet
     data.to_csv(args.path_csv.replace('.csv', '_full.csv'), na_rep='', sep=',', index=False)
