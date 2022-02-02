@@ -1,3 +1,4 @@
+__pycache__/
 /*
 !.gitignore
 !README.md
@@ -5,4 +6,3 @@
 src/*
 !src/beh_exp
 !src/beh_exp/*
-__pycache__/
