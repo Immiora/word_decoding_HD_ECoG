@@ -6,6 +6,7 @@ __pycache__/
 !README.md
 !src/
 src/*
+!src/models
 !src/run*.sh
 !src/beh_exp
 !src/beh_exp/*
