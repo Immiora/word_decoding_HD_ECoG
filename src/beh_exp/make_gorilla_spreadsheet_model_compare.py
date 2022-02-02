@@ -3,7 +3,10 @@ Make spreadsheet for the behavioral experiment with Gorilla (.csv file)
 
 python beh_exp/make_gorilla_spreadsheet_model_compare.py \
     --path_csv /Fridge/users/julia/project_decoding_jip_janneke/data/beh_exp/spreadsheet_task3.csv \
-    --path_stim /Fridge/users/julia/project_decoding_jip_janneke/results/optuna_v1/jip_janneke/beh_stimuli
+    --path_stim /Fridge/users/julia/project_decoding_jip_janneke/results/optuna/jip_janneke/beh_stimuli
+
+Changes 24/12/2021:
+    - Only run opt/non-opt, and not the model comparisons, there are more difficult,and probably the effects are too small
 
 Changes 15/12/2021:
     - Dutch words for options
@@ -49,7 +52,8 @@ def main(args):
     words= ['<p style="font-size: 300%;">' + i + '</p>' for i in words]
 
     # once for opt vs non-opt, another run for densenet/mlp/seq2seq
-    for run in range(2):
+    # for run in range(2):
+    for run in range(1):
 
         # take random word of same number of syllables as second option
         if run == 0:
@@ -66,14 +70,30 @@ def main(args):
         res1 = ['Optie 1'] * len(tar1)
         res2 = ['Optie 2'] * len(tar1)
 
+        # add targets to make the task a bit easier and nicer (maybe could use them for ceilings?)
+        tar1_catch = random.sample(wavs_opt.copy(), 60)
+        tar2_catch_ = [i.replace('recon', 'target') for i in tar1_catch]
+        tar1_catch, tar2_catch = zip(*[random.sample(sublist, 2) for sublist in zip(tar1_catch, tar2_catch_)])
+        res1_catch = ['Optie 1'] * len(tar1_catch)
+        res2_catch = ['Optie 2'] * len(tar1_catch)
+        words_catch = [i.split('word-')[1].split('_')[0] for i in tar1_catch]
+        words_catch = ['<p style="font-size: 300%;">' + i + '</p>' for i in words_catch]
+
         # put all info together
-        block = {'display': ['Q3 evaluations'] * len(wavs_opt),
+        # block = {'display': ['Q3 evaluations'] * len(wavs_opt),
+        #          #'ans_3': ans,
+        #          'word_3': words,
+        #          'reconstructions_3.1': tar1,
+        #          'reconstructions_3.2': tar2,
+        #          'res_3.1': res1,
+        #          'res_3.2': res2}
+        block = {'display': ['Q3 evaluations'] * (len(wavs_opt) + len(tar1_catch)),
                  #'ans_3': ans,
-                 'word_3': words,
-                 'reconstructions_3.1': tar1,
-                 'reconstructions_3.2': tar2,
-                 'res_3.1': res1,
-                 'res_3.2': res2}
+                 'word_3': words + words_catch,
+                 'reconstructions_3.1': tar1 + tar1_catch,
+                 'reconstructions_3.2': tar2 + tar2_catch,
+                 'res_3.1': res1 + res1_catch,
+                 'res_3.2': res2 + res2_catch}
 
         # add to the spreadsheet
         data = data.append(pd.DataFrame(block))
@@ -82,9 +102,9 @@ def main(args):
     data['randomise_trials'] = 1
 
     # add start, instrucitons, end trials
-    data = pd.concat([data, pd.DataFrame({'display': ['End']})])
-    data = pd.concat([pd.DataFrame({'display': ['Start', 'Instructions evaluations'],
-                                    'test': [random.sample(wavs_recon, 1)[0].replace('recon', 'target'), None]}), data]) # add test audio for Start
+    # data = pd.concat([data, pd.DataFrame({'display': ['End']})])
+    # data = pd.concat([pd.DataFrame({'display': ['Instructions evaluations']}), data]) # add test audio for Start
+    data = pd.concat([pd.DataFrame({'display': ['Instructions evaluations'], 'reconstructions_3.1': ['beh_model_compare.png']}), data])
 
     # save spreadsheet
     data.to_csv(args.path_csv.replace('.csv', '_full.csv'), na_rep='', sep=',', index=False)

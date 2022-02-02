@@ -34,6 +34,7 @@ def main(args):
     if not op.isdir(output_dir): os.makedirs(output_dir)
 
     for subject in args.subject:
+        print(subject)
 
         for model in args.model:
             gen_dir = op.join(args.save_dir, args.task, subject, model)
@@ -42,6 +43,7 @@ def main(args):
             for trial in [0, best_trial['_number']]: # optimized and non-optimized
                 trial_dir = op.join(gen_dir, str(trial), 'eval')
                 model_dir = op.basename([f.path for f in os.scandir(op.join(gen_dir, str(trial))) if f.is_dir() and 'eval' not in f.path][0])
+                if trial != 0: print(model_dir)
 
                 for fold in range(args.n_folds):
                     fold_dir = op.join(trial_dir, 'fold' + str(fold))
