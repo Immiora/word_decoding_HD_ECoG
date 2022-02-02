@@ -1,8 +1,12 @@
 __pycache__/
+*.old
+*.csv
 /*
 !.gitignore
 !README.md
+!run*.sh
 !src/
 src/*
 !src/beh_exp
 !src/beh_exp/*
+
