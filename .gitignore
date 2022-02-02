@@ -4,9 +4,9 @@ __pycache__/
 /*
 !.gitignore
 !README.md
-!run*.sh
 !src/
 src/*
+!src/run*.sh
 !src/beh_exp
 !src/beh_exp/*
 
