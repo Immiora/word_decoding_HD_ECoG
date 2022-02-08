@@ -29,12 +29,12 @@ from matplotlib import pyplot as plt
 from evaluate_decoders.eval_pearsonr import calculate_pearsonr_flattened
 from stats.eval_pearsonr_stoi_perm_shuffle import load_t_moments, normalize
 
-def plot_metric_boxplot(metric, data, floors=None, ceilings=None, title='', ylim = (0, 1), plot_dots=False, plotdir=None):
-    fig, ax = plt.subplots(1, 1, figsize=(6, 3)) # changed from 5,3 to 6,3
+
+def plot_metric_boxplot(metric, data, floors=None, ceilings=None, title='', ylim = (0, 1), plotdir=None):
+    fig, ax = plt.subplots(1, 1, figsize=(7, 4)) # changed from 5,3 to 6,3
 
     if floors is not None:
-        sns.boxplot(x='subject', y=metric, data=floors,
-                    hue='model',
+        sns.boxplot(y=metric, data=floors,
                     orient='v',
                     boxprops=dict(alpha=.3, facecolor='lightgray', linewidth=.5),
                     whiskerprops=dict(linestyle=':', linewidth=.5, color='black'),
@@ -43,8 +43,7 @@ def plot_metric_boxplot(metric, data, floors=None, ceilings=None, title='', ylim
                     showfliers=False, whis=[5, 95], ax=ax)
 
     if ceilings is not None:
-        sns.boxplot(x='subject', y=metric, data=ceilings,
-                    hue='model',
+        sns.boxplot(y=metric, data=ceilings,
                     orient='v',
                     boxprops=dict(alpha=.3, linewidth=.5, facecolor='salmon'),
                     whiskerprops=dict(linestyle=':', linewidth=.5, color='black'),
@@ -52,57 +51,34 @@ def plot_metric_boxplot(metric, data, floors=None, ceilings=None, title='', ylim
                     capprops=dict(linestyle=':', linewidth=.5, color='black'),
                     ax=ax, color='gray', showfliers=False, whis=[5, 95])
 
-    if plot_dots:
-        sns.stripplot(x='subject', y=metric, data=data,
-                      hue='model', size=6, orient='v', # changed size from 4 to 6
-                      jitter=.2, dodge=True, alpha=.4, linewidth=.6,
-                      edgecolors='black', ax=ax)
-
-    sns.boxplot(x='subject', y=metric, data=data,
-                boxprops=dict(alpha=.7, linewidth=.5),
-                whiskerprops=dict(linewidth=1),
-                medianprops=dict(color='red', linewidth=.5),
-                capprops=dict(linewidth=.5),
-                showfliers=False, whis=[5, 95],  # added showfliers = False, whis=[5, 95]
-                hue='model',
-                orient='v')
-
-    sns.boxplot(x='model', y=metric, data=data,
-                boxprops=dict(alpha=.7, linewidth=.5),
-                whiskerprops=dict(linewidth=1),
-                medianprops=dict(color='red', linewidth=.5),
-                capprops=dict(linewidth=.5),
-                showfliers=False, whis=[5, 95],  # added showfliers = False, whis=[5, 95]
-                hue='subject',
-                orient='v')
-
-    fig, ax = plt.subplots(1, 1, figsize=(6, 3)) # changed from 5,3 to 6,3
     sns.stripplot(x='model', y=metric, data=data,
-                  hue='subject',
+                  hue='trial',
                   size=9, orient='v',
-                  jitter=0, dodge=True, alpha=.0, linewidth=.6,
+                  jitter=.2, dodge=True, alpha=.0, linewidth=.6,
                   edgecolors='black', ax=ax)
 
-    sns.boxplot(x='model', y=metric, data=data,
-                boxprops=dict(alpha=.7, facecolor='none'),
+    sns.boxplot(x='model', y=metric, data=data, hue='trial',
+                boxprops=dict(alpha=.7), width=.7,
                 medianprops=dict(color='red'),
-                ax=ax, orient='v', showfliers=False, whis=[5, 95])  # added showfliers = False, whis=[5, 95]
+                ax=ax, orient='v', showfliers=False, whis=[5, 95])
 
     markers = ['*', '^', 'o', 's', 'd']
     colors = sns.color_palette()[:3]
-    n = len(args.subject)
+    n = len(data['subject'].unique())
     box = 0
     for model in range(3):
-        print(box)
-        for sub, mar in zip(range(n), markers):
-            pos = ax.get_children()[box].get_offsets().data
-            marsize = 11 if mar == '*' else 7  # was 11 and 15: too big
-            ax.plot(np.mean(pos[:, 0]),
-                    np.median(pos[:, 1]), markersize=marsize+5,
-                    markeredgecolor='black', color=colors[model], marker=mar)
-            for i in range(12):
-                ax.plot(pos[i][0], pos[i][1], markersize=marsize,
-                        markeredgecolor='black', color=colors[model], marker=mar, alpha=0.1)
+        for trial in range(2):
+            print(box)
+            for sub, mar in zip(range(n), markers):
+                pos = ax.get_children()[box].get_offsets().data
+                print(len(pos))
+                marsize = 11 if mar == '*' else 7  # was 11 and 15: too big
+                ax.plot(np.nanmean(pos[:, 0])+0.08*(sub-2),
+                        np.nanmedian(pos[sub*12:sub*12+12, 1]), markersize=marsize+4,
+                        markeredgecolor='black', color=colors[model], marker=mar)
+                for i in range(12):
+                    ax.plot(np.mean(pos[:, 0])+0.08*(sub-2), pos[sub*12+i][1], markersize=marsize,
+                            markeredgecolor='black', color=colors[model], marker=mar, alpha=0.1)
             box = box + 1
 
     plt.ylim(ylim)
@@ -160,12 +136,11 @@ def main(args):
         # UNCOMMENT THIS WHEN PERMUTATIONS ARE DONE
 
         plot_metric_boxplot(metric='pearsonr',
-                            data=res_pearsonr[res_pearsonr['trial'] == 'optimized'],
+                            data=res_pearsonr[res_pearsonr['trial'].isin(['optimized', 'non-optimized'])],
                             ceilings=None,
                             floors=res_pearsonr[res_pearsonr['trial'] == 'permutation'],
-                            title='fig4b_eval_pearsonr_with' + '_perm' + file_tag,
+                            title='fig4b_eval_pearsonr' + '_with_bounds' + file_tag + '_opt_non-opt',
                             ylim=(-.25, 1),
-                            plot_dots=args.plot_dots,
                             plotdir=args.plot_dir)
 
 
@@ -181,13 +156,12 @@ def main(args):
                                    (res_pearsonr['model'] == model)]['pearsonr'].mean()
                 print(subject + ' & ' + model + ' pval: ' + str(get_stat_pval(val, baseline)))
 
+
         # optimized vs non-optimized effects:
         w = wilcoxon(res_pearsonr[res_pearsonr['trial'] == 'optimized']['pearsonr'] -
                  res_pearsonr[res_pearsonr['trial'] == 'non-optimized']['pearsonr'], alternative='greater',
                  zero_method='zsplit')
         print('overall effect: ', w)
-        # overall effect: WilcoxonResult(w_statistic=12690.0, z_statistic=6.492476217927286, pvalue=4.221842572411459e-11)
-
 
         for model in args.model:
             w = wilcoxon(res_pearsonr[(res_pearsonr['trial'] == 'optimized') & (res_pearsonr['model']==model)]['pearsonr'] -
@@ -195,25 +169,16 @@ def main(args):
                      zero_method='zsplit')
             print(model, w)
 
-            # mlp
-            # WilcoxonResult(w_statistic=1277.0, z_statistic=2.6649002865887965, pvalue=0.0038505576830898413)
-            # densenet
-            # WilcoxonResult(w_statistic=1710.0, z_statistic=5.852474386293075, pvalue=2.4215642596013072e-09)
-            # seq2seq
-            # WilcoxonResult(w_statistic=1141.0, z_statistic=1.6637222783675911, pvalue=0.048083971023011554)
 
         # model effects
-        for model in args.model:
-            # w = wilcoxon(results_all[(results_all['trial'] == 'optimized') & (results_all['model']==model)][col] -
-            #          results_all[(results_all['trial'] == 'non-optimized') & (results_all['model']==model)][col], alternative='greater',
-            #          zero_method='zsplit')
-            w = wilcoxon(data[data['model'] == model]['pearsonr'] - data[data['model'] == model]['pearsonr'],
-                         alternative='greater', zero_method='zsplit')
-            # w = wilcoxon(results[(results['trial'] == 'optimized') & (results['model']==model)][col] -
-            #          results[(results['trial'] == 'non-optimized') & (results['model']==model)][col], alternative='greater',
-            #          zero_method='zsplit')
-            print(model, w)
-
+        from scipy import stats
+        import scikit_posthocs as spost
+        r = res_pearsonr[res_pearsonr['trial'] == 'optimized']
+        a = r[r['model'] == 'mlp']['pearsonr']
+        b = r[r['model'] == 'densenet']['pearsonr']
+        c = r[r['model'] == 'seq2seq']['pearsonr']
+        print(stats.kruskal(a, b, c))
+        print(spost.posthoc_dunn(np.vstack([a, b, c])))
 
 if __name__ == '__main__':
 
@@ -241,10 +206,3 @@ if __name__ == '__main__':
     args.subject = get_subjects_by_code(args.subject_code)
 
     main(args)
-
-# sns.barplot(x='q', y='model', data=qs,
-#             hue='subject',
-#             orient='h',
-#             color='gray',
-#             linewidth=1,
-#             ax=ax)
