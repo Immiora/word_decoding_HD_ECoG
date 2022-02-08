@@ -1,12 +1,15 @@
 __pycache__/
 *.old
+*_old.*
 *.csv
+*.m
 /*
 !.gitignore
 !README.md
 !src/
 src/*
 !src/models
+!src/figures
 !src/run*.sh
 !src/beh_exp
 !src/beh_exp/*
