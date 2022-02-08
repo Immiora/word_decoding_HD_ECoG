@@ -80,7 +80,7 @@ def main(args):
                             floors=results[results['trial'] == 'permutation'],
                             ceilings=results[results['trial']=='ceiling'],
                             title='fig4c_eval_' + metric + '_with_bounds' + file_tag + '_opt_non-opt',
-                            ylim=(0, 1.1),
+                            ylim=(.2, 1.1),
                             plotdir=args.plot_dir)
 
         # UNCOMMENT THIS WHEN PERMUTATIONS ARE DONE

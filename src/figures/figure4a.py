@@ -26,8 +26,11 @@ from matplotlib import pyplot as plt
 #from prepare_data.options_grid_spectrogram_jip_janneke import logmelfilterbank
 
 
-def wav2spec(fname):
+def load_audio(fname):
     x, sr = librosa.load(fname, sr=22050)
+    return x
+
+def wav2spec(x):
     X = librosa.stft(x, win_length=1024)
     Xdb = librosa.amplitude_to_db(abs(X))
     return Xdb
@@ -45,28 +48,43 @@ def main(args):
                 [f.path for f in os.scandir(op.join(gen_dir, str(best_trial))) if f.is_dir() and 'eval' not in f.path][0])
 
             targets_2d, reconstructions_2d = [], []
+            targets_wav, reconstructions_wav = [], []
             for fold in range(args.n_folds):
                 fold_dir = op.join(trial_dir, 'fold' + str(fold))
                 assert op.exists(fold_dir), 'No fold dir at ' + fold_dir
                 audio_val_targets = op.join(fold_dir, model_dir, 'parallel_wavegan', 'targets_validation_gen.wav')
                 audio_val_predictions = op.join(fold_dir, model_dir, 'parallel_wavegan',
                                                           model + '_validation_gen.wav')
-
-                targets_2d.append(wav2spec(audio_val_targets))
-                reconstructions_2d.append(wav2spec(audio_val_predictions))
+                t = load_audio(audio_val_targets)
+                p = load_audio(audio_val_predictions)
+                targets_2d.append(wav2spec(t))
+                reconstructions_2d.append(wav2spec(p))
+                targets_wav.append(librosa.util.normalize(t))
+                reconstructions_wav.append(librosa.util.normalize(p))
 
             plt.figure(figsize=(12, 5))
             plt.subplot(211)
-            librosa.display.specshow(np.hstack(targets_2d), sr=22050, x_axis='time', y_axis='hz', cmap='rainbow')
-            plt.ylim(0, 7600)
+            plt.plot(np.concatenate(targets_wav))
             plt.subplot(212)
-            librosa.display.specshow(np.hstack(reconstructions_2d), sr=22050, x_axis='time', y_axis='hz', cmap='rainbow')
-            plt.ylim(0, 7600)
+            plt.plot(np.concatenate(reconstructions_wav))
 
             if args.plot_dir != '':
-                plt.savefig(op.join(args.plot_dir, 'fig4a_reconstructed_spectrogram_' + subject + '_' + model + '.pdf'),
+                plt.savefig(op.join(args.plot_dir, 'fig4a_waveform_' + subject + '_' + model + '.pdf'),
                             dpi=160, transparent=True)
                 plt.close()
+
+            # plt.figure(figsize=(12, 5))
+            # plt.subplot(211)
+            # librosa.display.specshow(np.hstack(targets_2d), sr=22050, x_axis='time', y_axis='hz', cmap='rainbow')
+            # plt.ylim(0, 7600)
+            # plt.subplot(212)
+            # librosa.display.specshow(np.hstack(reconstructions_2d), sr=22050, x_axis='time', y_axis='hz', cmap='rainbow')
+            # plt.ylim(0, 7600)
+            #
+            # if args.plot_dir != '':
+            #     plt.savefig(op.join(args.plot_dir, 'fig4a_reconstructed_spectrogram_' + subject + '_' + model + '.pdf'),
+            #                 dpi=160, transparent=True)
+            #     plt.close()
 
 
 
