@@ -89,15 +89,6 @@ def run_main(args):
     out_opt['weight'] = -0.1
     out_opt.loc[(out_opt.answer==True).values, 'weight'] = 0.1
 
-    # out_mod = out_df[out_df['task']=='mod']
-    # out_mod = out_mod.reset_index(drop=True)
-    # out_mod.loc[(out_mod['task']=='mod') & (out_mod['answer']=='seq2seq') & (out_mod['alternative']=='mlp'), 'weight'] = 0.1
-    # out_mod.loc[(out_mod['task']=='mod') & (out_mod['answer']=='mlp') & (out_mod['alternative']=='seq2seq'), 'weight'] = -0.1
-    # out_mod.loc[(out_mod['task']=='mod') & (out_mod['answer']=='seq2seq') & (out_mod['alternative']=='densenet'), 'weight'] = 0.1
-    # out_mod.loc[(out_mod['task']=='mod') & (out_mod['answer']=='densenet') & (out_mod['alternative']=='seq2seq'), 'weight'] = -0.1
-    # out_mod.loc[(out_mod['task']=='mod') & (out_mod['answer']=='densenet') & (out_mod['alternative']=='mlp'), 'weight'] = 0.1
-    # out_mod.loc[(out_mod['task']=='mod') & (out_mod['answer']=='mlp') & (out_mod['alternative']=='densenet'), 'weight'] = -0.1
-
     res_opt = pd.DataFrame()
     for s in [str(i) for i in range(1, 6)]:
         for m in ['mlp', 'densenet', 'seq2seq']:
@@ -106,21 +97,8 @@ def run_main(args):
                 res_opt = res_opt.append(pd.DataFrame({'sub': [s], 'mod':[m], 'file': [d],
                                                'weight':[temp['weight'].mean()]}))
 
-    # res_mod = pd.DataFrame()
-    # for s in [str(i) for i in range(1, 6)]:
-    #     for o in out_mod['opt'].unique():
-    #         for m1, m2 in list(itertools.combinations(['seq2seq', 'densenet', 'mlp'], 2)):
-    #             for d in out_mod['file'].unique():
-    #                 temp = out_mod[(out_mod['sub']==s) & (out_mod['opt']==o) & (out_mod['file']==d) &
-    #                                                  ((out_mod['answer']== m1) &(out_mod['alternative']== m2) |
-    #                                                   (out_mod['answer']== m2) &(out_mod['alternative']== m1))]
-    #                 res_mod = res_mod.append(pd.DataFrame({'sub': [s], 'opt':[o], 'file': [d],
-    #                                                        'mod': [m1 + '-' + m2],
-    #                                                        'weight':[temp['weight'].mean()]}))
 
     res_opt = res_opt.sort_values(by=['sub'])
-    # res_mod = res_mod.sort_values(by=['sub'])
-
 
     plotdir = args.data_dir.replace('data', 'pics')
     if not op.isdir(plotdir): makedirs(plotdir)

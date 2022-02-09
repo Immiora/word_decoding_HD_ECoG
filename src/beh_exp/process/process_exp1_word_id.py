@@ -60,7 +60,6 @@ def parse_info(l, code):
 
 def process_one(data_file, type_exp):
     data_ = pd.read_csv(data_file)
-    #type_exp = op.basename(data_file).split('.')[0]
     data = data_[['Participant Private ID', 'Zone Type', 'Response', 'Correct',
                   'reconstructions_1' if 'exp1' in type_exp else 'reconstructions_2',
                   'ans_1' if 'exp1' in type_exp else 'ans_2']] # also save resp1 and resp2 for permutation tests?
@@ -82,7 +81,6 @@ def process_one(data_file, type_exp):
 
     assert len(set([len(out[k])  for k in out.keys()])) == 1, 'Unequal number of elements in out dict'
     out_df = pd.DataFrame(out)
-    #out_df['file'] = op.basename(data_file).split('.')[0]
     return out_df
 
 def run_main(args):
@@ -91,16 +89,7 @@ def run_main(args):
     for f in glob.glob(op.join(args.data_dir, '*.csv')):
         out_df = out_df.append(process_one(f, args.type_exp))
 
-    # res = pd.DataFrame()
-    # for s in [str(i) for i in range(1, 6)]:
-    #     for m in ['mlp', 'densenet', 'seq2seq']:
-    #         for d in out_df['file'].unique():
-    #             for o in out_df['opt'].unique():
-    #                 for r in out_df['recon'].unique():
-    #                     temp = out_df[(out_df['sub']==s) & (out_df['mod']==m) & (out_df['file']==d) & (out_df['opt']==o) & (out_df['recon']==r)]
-    #                     res = res.append(pd.DataFrame({'sub': [s], 'mod':[m], 'opt': [o], 'recon': [r],
-    #                                                    'accuracy':[temp['accuracy'].mean()],
-    #                                                    'file': [d]}))
+    # average over 12 words
     res = pd.DataFrame()
     for s in [str(i) for i in range(1, 6)]:
         for m in ['mlp', 'densenet', 'seq2seq']:
@@ -117,8 +106,26 @@ def run_main(args):
                             res = res.append(pd.DataFrame({'sub': [s], 'mod':['seq2seq'], 'opt': [o], 'recon': [r],
                                                            'accuracy':[temp['accuracy'].mean()],
                                                            'file': [d]}))
+    # average over 12 words
+    res2 = pd.DataFrame()
+    for s in [str(i) for i in range(1, 6)]:
+        for m in ['mlp', 'densenet', 'seq2seq']:
+            for w in out_df['target_response'].unique():
+                for o in out_df['opt'].unique():
+                    for r in out_df['recon'].unique():
+                        if r == True:
+                            temp = out_df[(out_df['sub']==s) & (out_df['mod']==m) & (out_df['target_response']==w) & (out_df['opt']==o) & (out_df['recon']==r)]
+                            res2 = res2.append(pd.DataFrame({'sub': [s], 'mod':[m], 'opt': [o], 'recon': [r],
+                                                           'accuracy':[temp['accuracy'].mean()],
+                                                           'word': [w]}))
+                        else:
+                            temp = out_df[(out_df['sub']==s) & (out_df['mod']=='seq2seq') & (out_df['target_response']==w) & (out_df['opt']==o) & (out_df['recon']==r)]
+                            res2 = res2.append(pd.DataFrame({'sub': [s], 'mod':['seq2seq'], 'opt': [o], 'recon': [r],
+                                                           'accuracy':[temp['accuracy'].mean()],
+                                                           'word': [w]}))
 
     res = res.sort_values(by=['sub'])
+    res2 = res2.sort_values(by=['sub', 'mod'])
 
     plotdir = args.data_dir.replace('data', 'pics')
     if not op.isdir(plotdir): makedirs(plotdir)
@@ -131,6 +138,7 @@ def run_main(args):
     if not op.isdir(args.save_dir): makedirs(args.save_dir)
     out_df.to_csv(op.join(args.save_dir, 'results_all.csv'))
     res.to_csv(op.join(args.save_dir, 'results_avg_over_12words.csv'))
+    res2.to_csv(op.join(args.save_dir, 'results_avg_over_30subjs.csv'))
 
 
 ##

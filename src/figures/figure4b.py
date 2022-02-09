@@ -89,96 +89,101 @@ def plot_metric_boxplot(metric, data, floors=None, ceilings=None, title='', ylim
         plt.savefig(op.join(plotdir, title + '.pdf'), dpi=160, transparent=True)
         plt.close()
 
+def load_pearson_df(args):
+    res_pearsonr, qs = pd.DataFrame(), pd.DataFrame()
+    file_tag = '_shuf_words' if args.type_perm == 'shuffle' else '_sil_only'
+    for isubj, subject in enumerate(args.subject):
+        print(subject)
+        for imod, model in enumerate(args.model):
+            gen_dir = op.join(args.res_dir, args.task, subject, model)
+            best_trial = json.load(open(op.join(gen_dir, 'best_trial.json'), 'r'))['_number']
+
+            for itrial, trial in enumerate([0, best_trial]): # optimized and non-optimized
+                trial_dir = op.join(gen_dir, str(trial), 'eval')
+
+                for fold in range(12):
+                    fold_dir = op.join(trial_dir, 'fold' + str(fold))
+                    assert op.exists(fold_dir), 'No fold dir at ' + fold_dir
+
+                    val_predictions = np.load(os.path.join(fold_dir, 'val_predictions.npy'))
+                    val_targets = np.load(os.path.join(fold_dir, 'val_targets.npy'))
+                    t_mean, t_std = load_t_moments(fold_dir)
+                    val_predictions_z = normalize(val_predictions, t_mean, t_std)
+                    val_targets_z = normalize(val_targets, t_mean, t_std)
+
+                    a = pd.DataFrame({'subject':[], 'model':[], 'trial':[], 'fold':[], 'pearsonr':[]})
+                    a.loc[0, 'subject'] = subject
+                    a['model'] = model
+                    a['trial'] = 'non-optimized' if trial == 0 else 'optimized'
+                    a['fold'] = fold
+                    a['pearsonr'] = calculate_pearsonr_flattened(val_predictions_z, val_targets_z)['r'].values[0]
+                    res_pearsonr = res_pearsonr.append(a)
+
+                # UNCOMMENT THIS WHEN PERMUTATIONS ARE DONE
+                if itrial == 1:  # best_trial
+                    b = pd.read_csv(
+                        op.join(trial_dir, 'eval_n_folds' + str(args.n_folds) + '_pearsonr'+'_perm'+file_tag+'.csv'),
+                        index_col=[0])
+                    b['subject'] = subject
+                    b['model'] = model
+                    b['trial'] = 'permutation'
+                    res_pearsonr = res_pearsonr.append(b)
+                    x = {'subject': subject, 'model':model, 'q':b['pearsonr'].quantile(0.95)}
+                    qs = qs.append(x, ignore_index=True)
+
+    return res_pearsonr
+
 def main(args):
-    for type_perm in args.type_perm:
-        res_pearsonr, qs = pd.DataFrame(), pd.DataFrame()
-        file_tag = '_shuf_words' if type_perm == 'shuffle' else '_sil_only'
+    res_pearsonr = load_pearson_df(args)
+    file_tag = '_shuf_words' if args.type_perm == 'shuffle' else '_sil_only'
 
-        for isubj, subject in enumerate(args.subject):
-            print(subject)
-            for imod, model in enumerate(args.model):
-                gen_dir = op.join(args.res_dir, args.task, subject, model)
-                best_trial = json.load(open(op.join(gen_dir, 'best_trial.json'), 'r'))['_number']
-
-                for itrial, trial in enumerate([0, best_trial]): # optimized and non-optimized
-                    trial_dir = op.join(gen_dir, str(trial), 'eval')
-
-                    for fold in range(12):
-                        fold_dir = op.join(trial_dir, 'fold' + str(fold))
-                        assert op.exists(fold_dir), 'No fold dir at ' + fold_dir
-
-                        val_predictions = np.load(os.path.join(fold_dir, 'val_predictions.npy'))
-                        val_targets = np.load(os.path.join(fold_dir, 'val_targets.npy'))
-                        t_mean, t_std = load_t_moments(fold_dir)
-                        val_predictions_z = normalize(val_predictions, t_mean, t_std)
-                        val_targets_z = normalize(val_targets, t_mean, t_std)
-
-                        a = pd.DataFrame({'subject':[], 'model':[], 'trial':[], 'fold':[], 'pearsonr':[]})
-                        a.loc[0, 'subject'] = subject
-                        a['model'] = model
-                        a['trial'] = 'non-optimized' if trial == 0 else 'optimized'
-                        a['fold'] = fold
-                        a['pearsonr'] = calculate_pearsonr_flattened(val_predictions_z, val_targets_z)['r'].values[0]
-                        res_pearsonr = res_pearsonr.append(a)
-
-                    # UNCOMMENT THIS WHEN PERMUTATIONS ARE DONE
-                    if itrial == 1:  # best_trial
-                        b = pd.read_csv(
-                            op.join(trial_dir, 'eval_n_folds' + str(args.n_folds) + '_pearsonr'+'_perm'+file_tag+'.csv'),
-                            index_col=[0])
-                        b['subject'] = subject
-                        b['model'] = model
-                        b['trial'] = 'permutation'
-                        res_pearsonr = res_pearsonr.append(b)
-                        x = {'subject': subject, 'model':model, 'q':b['pearsonr'].quantile(0.95)}
-                        qs = qs.append(x, ignore_index=True)
-
-        # UNCOMMENT THIS WHEN PERMUTATIONS ARE DONE
-
-        plot_metric_boxplot(metric='pearsonr',
-                            data=res_pearsonr[res_pearsonr['trial'].isin(['optimized', 'non-optimized'])],
-                            ceilings=None,
-                            floors=res_pearsonr[res_pearsonr['trial'] == 'permutation'],
-                            title='fig4b_eval_pearsonr' + '_with_bounds' + file_tag + '_opt_non-opt',
-                            ylim=(-.25, 1),
-                            plotdir=args.plot_dir)
+    # plot
+    plot_metric_boxplot(metric='pearsonr',
+                        data=res_pearsonr[res_pearsonr['trial'].isin(['optimized', 'non-optimized'])],
+                        ceilings=None,
+                        floors=res_pearsonr[res_pearsonr['trial'] == 'permutation'],
+                        title='fig4b_eval_pearsonr' + '_with_bounds' + file_tag + '_opt_non-opt',
+                        ylim=(-.25, 1),
+                        plotdir=args.plot_dir)
 
 
-        # significance based on permutation baseline
-        print(type_perm)
-        for subject in args.subject:
-            for model in args.model:
-                baseline = res_pearsonr[(res_pearsonr['subject']==subject) &
-                                        (res_pearsonr['model']==model) &
-                                        (res_pearsonr['trial']=='permutation')]['pearsonr'].values
-                val = res_pearsonr[(res_pearsonr['trial'] == 'optimized') &
-                                   (res_pearsonr['subject'] == subject) &
-                                   (res_pearsonr['model'] == model)]['pearsonr'].mean()
-                print(subject + ' & ' + model + ' pval: ' + str(get_stat_pval(val, baseline)))
-
-
-        # optimized vs non-optimized effects:
-        w = wilcoxon(res_pearsonr[res_pearsonr['trial'] == 'optimized']['pearsonr'] -
-                 res_pearsonr[res_pearsonr['trial'] == 'non-optimized']['pearsonr'], alternative='greater',
-                 zero_method='zsplit')
-        print('overall effect: ', w)
-
+    # significance based on permutation baseline
+    for subject in args.subject:
         for model in args.model:
-            w = wilcoxon(res_pearsonr[(res_pearsonr['trial'] == 'optimized') & (res_pearsonr['model']==model)]['pearsonr'] -
-                     res_pearsonr[(res_pearsonr['trial'] == 'non-optimized') & (res_pearsonr['model']==model)]['pearsonr'], alternative='greater',
-                     zero_method='zsplit')
-            print(model, w)
+            baseline = res_pearsonr[(res_pearsonr['subject']==subject) &
+                                    (res_pearsonr['model']==model) &
+                                    (res_pearsonr['trial']=='permutation')]['pearsonr'].values
+            val = res_pearsonr[(res_pearsonr['trial'] == 'optimized') &
+                               (res_pearsonr['subject'] == subject) &
+                               (res_pearsonr['model'] == model)]['pearsonr'].mean()
+            print(subject + ' & ' + model + ' pval: ' + str(get_stat_pval(val, baseline)))
 
 
-        # model effects
-        from scipy import stats
-        import scikit_posthocs as spost
-        r = res_pearsonr[res_pearsonr['trial'] == 'optimized']
-        a = r[r['model'] == 'mlp']['pearsonr']
-        b = r[r['model'] == 'densenet']['pearsonr']
-        c = r[r['model'] == 'seq2seq']['pearsonr']
-        print(stats.kruskal(a, b, c))
-        print(spost.posthoc_dunn(np.vstack([a, b, c])))
+    # optimized vs non-optimized effects:
+    w = wilcoxon(res_pearsonr[res_pearsonr['trial'] == 'optimized']['pearsonr'] -
+             res_pearsonr[res_pearsonr['trial'] == 'non-optimized']['pearsonr'], alternative='greater',
+             zero_method='zsplit')
+    print('overall effect: ', w)
+
+    for model in args.model:
+        w = wilcoxon(res_pearsonr[(res_pearsonr['trial'] == 'optimized') & (res_pearsonr['model']==model)]['pearsonr'] -
+                 res_pearsonr[(res_pearsonr['trial'] == 'non-optimized') & (res_pearsonr['model']==model)]['pearsonr'], alternative='greater',
+                 zero_method='zsplit')
+        print(model, w)
+
+
+    # model effects
+    from scipy import stats
+    import scikit_posthocs as spost
+    r = res_pearsonr[res_pearsonr['trial'] == 'optimized']
+    a = r[r['model'] == 'mlp']['pearsonr']
+    b = r[r['model'] == 'densenet']['pearsonr']
+    c = r[r['model'] == 'seq2seq']['pearsonr']
+    print(stats.kruskal(a, b, c))
+    print(spost.posthoc_dunn(np.vstack([a, b, c])))
+
+
+
 
 if __name__ == '__main__':
 
@@ -191,10 +196,10 @@ if __name__ == '__main__':
     parser.add_argument('--model', '-m', type=str,  nargs="+",
                         choices=['mlp', 'densenet', 'seq2seq'],
                         default=['mlp', 'densenet', 'seq2seq'],
-                        help='Model t34o run')
-    parser.add_argument('--type_perm',  type=str,  nargs="+",
+                        help='Model to run')
+    parser.add_argument('--type_perm',  type=str,
                         choices=['shift', 'shuffle'],
-                        default=['shift', 'shuffle'],
+                        default='shift',
                         help='Model to run')
     parser.add_argument('--n_folds', '-n', type=int, help='Number of CV folds')
     parser.add_argument('--res_dir', '-o', type=str, help='Output directory', default='')
