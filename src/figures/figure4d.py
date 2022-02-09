@@ -12,7 +12,6 @@ python figures/figure4d.py \
 
 import sys
 sys.path.insert(0, '.')
-sys.path.insert(0, './src')
 
 import os.path as op
 import argparse

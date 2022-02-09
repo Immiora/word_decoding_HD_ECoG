@@ -39,14 +39,17 @@ def main(args):
         for input in ['reconstructed', 'target_audio']: # have to keep outside otherwise in plots: mlp, brain12, densenet, seq2seq
 
             for model in args.model:
-                a = pd.read_csv(op.join(gen_dir, 'eval_' + model + '_' + metric + '_' + args.clf_type + '.csv'), index_col=[0])
-                b = {}
-                b['input'] = input
-                b['accuracy'] = a[a['input'] == input]['accuracy'].mean()
-                b['model'] = [model if input == 'reconstructed' else 'audio']
-                b['trial'] = 'real'
-                b['case'] = args.clf_type
-                results = results.append(pd.DataFrame(b))
+
+                for itrial, trial in enumerate(['trial0_', '']):
+                    if input == 'reconstructed' or (input == 'target_audio' and trial != 'trial0_'):
+                        a = pd.read_csv(op.join(gen_dir, 'eval_' + model + '_' + metric + '_' + trial + args.clf_type + '.csv'), index_col=[0])
+                        b = {}
+                        b['input'] = input
+                        b['accuracy'] = a[a['input'] == input]['accuracy'].mean()
+                        b['model'] = [model if input == 'reconstructed' else 'audio']
+                        b['trial'] = 'non-optimized' if trial == 'trial0_' else 'optimized'
+                        b['case'] = args.clf_type
+                        results = results.append(pd.DataFrame(b))
 
                 # UNCOMMENT TO ADD PERM
                 a = pd.read_csv(op.join(gen_dir, 'eval_' + model + '_' + metric + '_' + args.clf_type + '_perm.csv'), index_col=[0])
@@ -61,14 +64,16 @@ def main(args):
                     results = results.append(pd.DataFrame(b))
 
         #
+        # results.loc[results['trial'] == 'non-optimized', 'input'] = 'non-optimized'
+
         fig, ax = plt.subplots(1, 1, figsize=(2, 4))
-        sns.stripplot(x='input', y='accuracy', data=results[(results['trial']=='real')&(results['input']=='reconstructed')],
+        sns.stripplot(x='input', y='accuracy', data=results[(results['trial'].isin(['optimized', 'non-optimized']))&(results['input']=='reconstructed')],
                       hue='model', hue_order=['mlp', 'densenet', 'seq2seq'], size=9, orient='v',
                       jitter=.2, dodge=True, alpha=.4, linewidth=.6, linestyle='-',
                       edgecolors='black', ax=ax)
 
         # ceiling: based on audio
-        sns.boxplot(y='accuracy', data=results[(results['trial']=='real')&(results['input']=='target_audio')],
+        sns.boxplot(y='accuracy', data=results[(results['trial']=='optimized')&(results['input']=='target_audio')],
                     hue='model',
                     orient='v',
                     boxprops=dict(alpha=.3, linewidth=.5, facecolor='salmon'),
@@ -98,7 +103,7 @@ def main(args):
         plt.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
         if args.plot_dir is not None:
             plt.savefig(op.join(args.plot_dir,
-                                     'fig5c_eval_' + metric + '_' + args.clf_type + '_recon_audio' + '.pdf'),
+                                     'fig5d1_eval_' + metric + '_' + args.clf_type + '_recon_audio' + '_opt_non-opt.pdf'),
                         dpi=160, transparent=True)
             plt.close()
 
