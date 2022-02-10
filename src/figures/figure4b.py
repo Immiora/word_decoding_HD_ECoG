@@ -27,7 +27,7 @@ from utils.general import get_stat_pval
 from utils.private.datasets import get_subjects_by_code
 from matplotlib import pyplot as plt
 from evaluate_decoders.eval_pearsonr import calculate_pearsonr_flattened
-from stats.eval_pearsonr_stoi_perm_shuffle import load_t_moments, normalize
+from stats.eval_pearsonr_stoi_perm_shuffle import load_t_moments, normalize, get_eval_input_params
 
 
 def plot_metric_boxplot(metric, data, floors=None, ceilings=None, title='', ylim = (0, 1), plotdir=None):
@@ -76,7 +76,7 @@ def plot_metric_boxplot(metric, data, floors=None, ceilings=None, title='', ylim
                 ax.plot(np.nanmean(pos[:, 0])+0.08*(sub-2),
                         np.nanmedian(pos[sub*12:sub*12+12, 1]), markersize=marsize+4,
                         markeredgecolor='black', color=colors[model], marker=mar)
-                for i in range(12):
+                for i in range(12): # replace with unique folds?
                     ax.plot(np.mean(pos[:, 0])+0.08*(sub-2), pos[sub*12+i][1], markersize=marsize,
                             markeredgecolor='black', color=colors[model], marker=mar, alpha=0.1)
             box = box + 1
@@ -107,9 +107,12 @@ def load_pearson_df(args):
 
                     val_predictions = np.load(os.path.join(fold_dir, 'val_predictions.npy'))
                     val_targets = np.load(os.path.join(fold_dir, 'val_targets.npy'))
-                    t_mean, t_std = load_t_moments(fold_dir)
+                    input_params = get_eval_input_params(fold_dir)
+                    t_mean, t_std = load_t_moments(input_params)
                     val_predictions_z = normalize(val_predictions, t_mean, t_std)
                     val_targets_z = normalize(val_targets, t_mean, t_std)
+                    words = pd.read_csv(op.join(fold_dir, op.basename(input_params['subsets_path_fold'])), index_col=[0])
+                    target_label = words[words['subset']=='validation']['text'].values[0]
 
                     a = pd.DataFrame({'subject':[], 'model':[], 'trial':[], 'fold':[], 'pearsonr':[]})
                     a.loc[0, 'subject'] = subject
@@ -117,6 +120,7 @@ def load_pearson_df(args):
                     a['trial'] = 'non-optimized' if trial == 0 else 'optimized'
                     a['fold'] = fold
                     a['pearsonr'] = calculate_pearsonr_flattened(val_predictions_z, val_targets_z)['r'].values[0]
+                    a['word'] = target_label
                     res_pearsonr = res_pearsonr.append(a)
 
                 # UNCOMMENT THIS WHEN PERMUTATIONS ARE DONE
