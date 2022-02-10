@@ -3,7 +3,7 @@ Plot behavioral data exp 2
 Boxplot over participants
 
 python figures/figure6b.py \
-    --res_dir /Fridge/users/julia/project_decoding_jip_janneke/results/optuna/jip_janneke/beh_exp/exp2_25subjs \
+    --res_dir /Fridge/users/julia/project_decoding_jip_janneke/results/optuna/jip_janneke/beh_exp/exp2_29subjs \
     --plot_dir /Fridge/users/julia/project_decoding_jip_janneke/pics/figures
 '''
 
@@ -19,13 +19,23 @@ from utils.general import get_stat_pval
 def main(args):
     res = pd.read_csv(op.join(args.res_dir, 'results_avg_over_12words.csv'), index_col=[0])
     res_perm = pd.read_csv(op.join(args.res_dir, 'results_avg_over_12words_avg_over_subjs_perm.csv'), index_col=[0])
-    plot_box_acc(res, res_perm, title='fig6b_beh_exp2_word_id', plot_dots=args.plot_dots, plotdir=args.plot_dir)
 
     for s in [i for i in range(1, 6)]:
         for m in ['mlp', 'densenet', 'seq2seq']:
             baseline = res_perm[(res_perm['sub'] == s) & (res_perm['mod'] == m)]['accuracy'].values
             val = res[(res['sub'] == s) & (res['recon'] == True) & (res['mod'] == m)]['accuracy'].median()
             print(str(s) + ' & ' + m + ' pval: ' + str(get_stat_pval(val, baseline)))
+
+    for i, m in enumerate(['mlp', 'densenet', 'seq2seq']):
+        res.loc[res['mod']==m, 'mod'] = str(i) + '_' + m
+    res = res.sort_values(by=['sub', 'mod'])
+
+    plot_box_acc(res[res['recon'] == True], floors=res_perm, ceilings=res[res['recon'] == False],
+                 title='fig6b_beh_exp2_word_id_sub_medians',
+                 ylim=(.05, 1.05),
+                 plotdir=args.plot_dir)
+
+
 
 
 ##
