@@ -89,6 +89,16 @@ def main(args):
             val = res[(res['sub'] == s) & (res['recon'] == True) & (res['mod'] == m)]['accuracy'].median()
             print(str(s) + ' & ' + m + ' pval: ' + str(get_stat_pval(val, baseline)))
 
+    # model effects
+    from scipy import stats
+    import scikit_posthocs as spost
+    a = res[(res['recon'] == True) & (res['mod'] == 'mlp')]['accuracy']
+    b = res[(res['recon'] == True) & (res['mod'] == 'densenet')]['accuracy']
+    c = res[(res['recon'] == True) & (res['mod'] == 'seq2seq')]['accuracy']
+    print(stats.kruskal(a, b, c))
+    print(spost.posthoc_dunn(np.vstack([a, b, c])))
+
+
     for i, m in enumerate(['mlp', 'densenet', 'seq2seq']):
         res.loc[res['mod']==m, 'mod'] = str(i) + '_' + m
     res = res.sort_values(by=['sub', 'mod'])

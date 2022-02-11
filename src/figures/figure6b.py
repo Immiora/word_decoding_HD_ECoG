@@ -15,6 +15,7 @@ import pandas as pd
 
 from figures.figure6a import plot_box_acc
 from utils.general import get_stat_pval
+from numpy import vstack
 
 def main(args):
     res = pd.read_csv(op.join(args.res_dir, 'results_avg_over_12words.csv'), index_col=[0])
@@ -25,6 +26,16 @@ def main(args):
             baseline = res_perm[(res_perm['sub'] == s) & (res_perm['mod'] == m)]['accuracy'].values
             val = res[(res['sub'] == s) & (res['recon'] == True) & (res['mod'] == m)]['accuracy'].median()
             print(str(s) + ' & ' + m + ' pval: ' + str(get_stat_pval(val, baseline)))
+
+    # model effects
+    from scipy import stats
+    import scikit_posthocs as spost
+    a = res[(res['recon'] == True) & (res['mod'] == 'mlp')]['accuracy']
+    b = res[(res['recon'] == True) & (res['mod'] == 'densenet')]['accuracy']
+    c = res[(res['recon'] == True) & (res['mod'] == 'seq2seq')]['accuracy']
+    print(stats.kruskal(a, b, c))
+    print(spost.posthoc_dunn(vstack([a, b, c])))
+
 
     for i, m in enumerate(['mlp', 'densenet', 'seq2seq']):
         res.loc[res['mod']==m, 'mod'] = str(i) + '_' + m

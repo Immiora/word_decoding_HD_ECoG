@@ -18,7 +18,7 @@ import seaborn as sns
 from matplotlib import pyplot as plt
 from utils.general import get_stat_pval
 from figures.figure6a import plot_box_acc
-
+from numpy import vstack
 
 def main(args):
     res = pd.read_csv(op.join(args.res_dir, 'results_avg_over_words_opt.csv'), index_col=[0])
@@ -29,6 +29,16 @@ def main(args):
             baseline = res_perm[(res_perm['sub'] == s) & (res_perm['mod'] == m)]['weight'].values
             val = res[(res['sub'] == s) & (res['mod'] == m)]['weight'].median()
             print(str(s) + ' & ' + m + ' pval: ' + str(get_stat_pval(val, baseline)))
+
+    # model effects
+    from scipy import stats
+    import scikit_posthocs as spost
+    a = res[(res['mod'] == 'mlp')]['weight']
+    b = res[(res['mod'] == 'densenet')]['weight']
+    c = res[(res['mod'] == 'seq2seq')]['weight']
+    print(stats.kruskal(a, b, c))
+    print(spost.posthoc_dunn(vstack([a, b, c])))
+
 
     for i, m in enumerate(['mlp', 'densenet', 'seq2seq']):
         res.loc[res['mod']==m, 'mod'] = str(i) + '_' + m
