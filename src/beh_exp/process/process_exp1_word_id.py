@@ -69,7 +69,7 @@ def process_one(data_file, type_exp):
     else:
         data = data.rename(columns={'reconstructions_2': 'reconstructions', 'ans_2': 'ans'})
 
-    codes = ['sub', 'mod', 'opt', 'recon']
+    codes = ['sub', 'mod', 'opt', 'recon', 'word']
     out = { k:[] for k in codes}
     for code in codes:
         out[code] = parse_info(data['reconstructions'].to_list(), code) # remove empty strings
@@ -110,20 +110,19 @@ def run_main(args):
     res2 = pd.DataFrame()
     for s in [str(i) for i in range(1, 6)]:
         for m in ['mlp', 'densenet', 'seq2seq']:
-            for w in out_df['target_response'].unique():
+            for w in out_df['word'].unique(): # changed from target_response, because it is speaker in exp 2
                 for o in out_df['opt'].unique():
                     for r in out_df['recon'].unique():
                         if r == True:
-                            temp = out_df[(out_df['sub']==s) & (out_df['mod']==m) & (out_df['target_response']==w) & (out_df['opt']==o) & (out_df['recon']==r)]
+                            temp = out_df[(out_df['sub']==s) & (out_df['mod']==m) & (out_df['word']==w) & (out_df['opt']==o) & (out_df['recon']==r)]
                             res2 = res2.append(pd.DataFrame({'sub': [s], 'mod':[m], 'opt': [o], 'recon': [r],
                                                            'accuracy':[temp['accuracy'].mean()],
                                                            'word': [w]}))
                         else:
-                            temp = out_df[(out_df['sub']==s) & (out_df['mod']=='seq2seq') & (out_df['target_response']==w) & (out_df['opt']==o) & (out_df['recon']==r)]
+                            temp = out_df[(out_df['sub']==s) & (out_df['mod']=='seq2seq') & (out_df['word']==w) & (out_df['opt']==o) & (out_df['recon']==r)]
                             res2 = res2.append(pd.DataFrame({'sub': [s], 'mod':['seq2seq'], 'opt': [o], 'recon': [r],
                                                            'accuracy':[temp['accuracy'].mean()],
                                                            'word': [w]}))
-
     res = res.sort_values(by=['sub'])
     res2 = res2.sort_values(by=['sub', 'mod'])
 
@@ -138,7 +137,7 @@ def run_main(args):
     if not op.isdir(args.save_dir): makedirs(args.save_dir)
     out_df.to_csv(op.join(args.save_dir, 'results_all.csv'))
     res.to_csv(op.join(args.save_dir, 'results_avg_over_12words.csv'))
-    res2.to_csv(op.join(args.save_dir, 'results_avg_over_30subjs.csv'))
+    res2.to_csv(op.join(args.save_dir, 'results_avg_over_subjs.csv'))
 
 
 ##

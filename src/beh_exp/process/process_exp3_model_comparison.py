@@ -96,26 +96,32 @@ def run_main(args):
                 temp = out_opt[(out_opt['sub']==s) & (out_opt['mod']==m) & (out_opt['file']==d)]
                 res_opt = res_opt.append(pd.DataFrame({'sub': [s], 'mod':[m], 'file': [d],
                                                'weight':[temp['weight'].mean()]}))
+    res2_opt = pd.DataFrame()
+    for s in [str(i) for i in range(1, 6)]:
+        for m in ['mlp', 'densenet', 'seq2seq']:
+            for w in out_df['word'].unique():
+                temp = out_opt[(out_opt['sub']==s) & (out_opt['mod']==m) & (out_opt['word']==w)]
+                res2_opt = res2_opt.append(pd.DataFrame({'sub': [s], 'mod':[m], 'word': [w],
+                                               'weight':[temp['weight'].mean()]}))
 
 
     res_opt = res_opt.sort_values(by=['sub'])
+    res2_opt = res2_opt.sort_values(by=['sub', 'mod'])
 
     plotdir = args.data_dir.replace('data', 'pics')
     if not op.isdir(plotdir): makedirs(plotdir)
 
     for s in res_opt['file'].unique():
         plot_dot_acc(res_opt[res_opt['file']==s], title=op.basename(s).split('.')[0] + '_opt', plotdir=plotdir)
-        #plot_dot_acc(res_mod[res_mod['file']==s], title=op.basename(s).split('.')[0] + '_mod', plotdir=plotdir)
 
     plot_dot_acc(res_opt, title='all_dots_opt', plot_box=True, plotdir=plotdir)
-    #plot_dot_acc(res_mod, title='all_dots_mod', plot_box=True, plotdir=plotdir)
 
     if not op.isdir(args.save_dir): makedirs(args.save_dir)
     out_df.to_csv(op.join(args.save_dir, 'results_all.csv'))
     out_opt.to_csv(op.join(args.save_dir, 'results_opt.csv'))
-    #out_mod.to_csv(op.join(args.save_dir, 'results_mod.csv'))
+
     res_opt.to_csv(op.join(args.save_dir, 'results_avg_over_words_opt.csv'))
-    #res_mod.to_csv(op.join(args.save_dir, 'results_avg_over_words_mod.csv'))
+    res2_opt.to_csv(op.join(args.save_dir, 'results_avg_over_subjs.csv'))
 
 
 

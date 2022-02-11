@@ -1,10 +1,9 @@
 '''
 Plot scatterplots: behavioral data exp 1 vs low-level feaures
 
-python figures/figure6a1.py \
+python figures/figure6b1.py \
     --task jip_janneke \
-    --metric vad \
-    --beh_dir /Fridge/users/julia/project_decoding_jip_janneke/results/optuna/jip_janneke/beh_exp/exp1_30subjs \
+    --beh_dir /Fridge/users/julia/project_decoding_jip_janneke/results/optuna/jip_janneke/beh_exp/exp2_29subjs  \
     --res_dir /Fridge/users/julia/project_decoding_jip_janneke/results/optuna \
     --plot_dir /Fridge/users/julia/project_decoding_jip_janneke/pics/figures \
     --n_folds 12
@@ -24,28 +23,11 @@ from figures.figure4b import load_pearson_df
 from figures.figure4c import load_vad_df
 from figures.figure4d import load_stoi_df
 from utils.private.datasets import get_subjects_by_code
-
+from figures.figure6a1 import plot_scatter_beh_metric
 pd.set_option('display.max_rows', 500)
 pd.set_option('display.max_columns', 500)
 pd.set_option('display.width', 1000)
 
-def plot_scatter_beh_metric(res_beh, res_low, metric, title='', plotdir=None):
-    colors = sns.color_palette()[:3]
-    for imodel, model in enumerate(['mlp', 'densenet', 'seq2seq']):
-        slope, intercept, r_value, p_value, std_err = stats.linregress(res_beh[(res_beh['mod']==model)]['accuracy'].values,
-                                                                       res_low[(res_low['model']==model)][metric].values.flatten())
-
-        plt.figure(figsize=(4, 4))
-        plt.title(model)
-        sns.regplot(x=res_beh[(res_beh['mod']==model)]['accuracy'],
-                    y=res_low[(res_low['model']==model)][metric],
-                    color=colors[imodel],
-                    line_kws={'label':"y={0:.2f}x+{1:.2f},r={2:.2f},p={3:.5f}".format(slope,intercept, r_value, p_value)})
-        plt.legend()
-        print(slope, p_value)
-        if plotdir is not None:
-            plt.savefig(op.join(plotdir, title + '_' + model + '.pdf'), dpi=160, transparent=True)
-            plt.close()
 
 def main(args):
     res_beh = pd.read_csv(op.join(args.beh_dir, 'results_avg_over_subjs.csv'), index_col=[0])
@@ -80,7 +62,7 @@ def main(args):
             assert res_beh.drop(filter)[a].equals(res_low.drop(filter)[b])
 
         plot_scatter_beh_metric(res_beh.drop(filter), res_low.drop(filter), metric,
-                                title='fig6a1_beh_exp1_word_id_' + metric + '_scatter',
+                                title='fig6b1_beh_exp2_speeaker_id_' + metric + '_scatter',
                                 plotdir=args.plot_dir)
 
 
