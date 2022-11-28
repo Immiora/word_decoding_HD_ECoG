@@ -1,0 +1,25 @@
+Original ranges OPTUNA:
+
+        params = {
+            'output_type': trial.suggest_categorical('output_type', ['clean', 'raw']),
+            'output_num': trial.suggest_categorical('output_num', [20, 40, 80]),
+            'sr': trial.suggest_categorical('sr', [15, 25, 75]),
+            'input_band': trial.suggest_categorical('input_band', ['70-170', '60-300']),
+            'input_ref': trial.suggest_categorical('input_ref',['car', 'bipolar']),
+            'fragment_len': trial.suggest_float('fragment_len', .16, .36, step=.2),
+            'drop_ratio': trial.suggest_loguniform('drop_ratio', 1e-4, 1e-1),
+            'learning_rate': trial.suggest_loguniform('learning_rate', 1e-4, 1e-2),
+        }
+
+        if self.args.model_type == 'mlp':
+            params['mlp_n_blocks'] = trial.suggest_int('mlp_n_blocks', 1, 5)
+            params['mlp_n_hidden'] = trial.suggest_int('mlp_n_hidden', 16, 256, step=48)
+        elif self.args.model_type == 'densenet':
+            params['dense_bottleneck'] = trial.suggest_categorical('dense_bottleneck', [True, False])
+            params['dense_reduce'] = trial.suggest_float('dense_reduce', 0.1, 1, step=.1, log=False)
+            params['dense_n_layers'] = trial.suggest_int('dense_n_layers', 10, 22, step=3)
+            params['dense_growth_rate'] = trial.suggest_int('dense_growth_rate', 10, 100, step=10)
+        elif self.args.model_type == 'seq2seq':
+            params['seq_n_enc_layers'] = trial.suggest_int('seq_n_enc_layers', 1, 5)
+            params['seq_n_dec_layers'] = trial.suggest_int('seq_n_dec_layers', 1, 5)
+            params['seq_bidirectional'] = trial.suggest_categorical('seq_bidirectional', [True, False])
