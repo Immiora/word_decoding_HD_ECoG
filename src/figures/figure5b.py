@@ -49,26 +49,26 @@ def main(args):
             prob_brain = prob_brain.append(temp)
 
         # plot means
-        for pr, input_type in zip([prob, prob_brain], ['_recon', '_brain']):
-            options = pr.columns.drop(['target', 'subject'])
-            means = pd.DataFrame(columns=options)
-            for target in pr['target'].unique():
-                means = means.append(pr[(pr['target']==target) & (pr['model']==model)].drop(['subject', 'model'], 1).mean(axis=0), ignore_index=True)
-            means.insert(0, 'target', pr['target'].unique())
-            means = means[np.hstack(['target', means['target'].values])]
-            plt.figure()
-            plt.imshow(means.drop('target', 1), vmin=0, vmax=1, cmap=get_model_cmap(model))
-            plt.colorbar()
-            plt.xlabel('Predicted words')
-            plt.ylabel('Targets (folds)')
-            #plt.xticks(range(12), [i for i in options],  rotation=45)
-            plt.xticks(range(12), [i for i in means['target'].values], rotation=45)
-            plt.yticks(range(12), [i for i in means['target'].values])
-            plt.title(model)
-            if args.plot_dir is not None:
-                plt.savefig(os.path.join(args.plot_dir,
-                             'fig5b_eval_classify_prob_matrices_meansubj_' + model + '_' + args.clf_type + input_type + '.pdf'), dpi=160, transparent=True)
-                plt.close()
+        # for pr, input_type in zip([prob, prob_brain], ['_recon', '_brain']):
+            # options = pr.columns.drop(['target', 'subject'])
+            # means = pd.DataFrame(columns=options)
+            # for target in pr['target'].unique():
+            #     means = means.append(pr[(pr['target']==target) & (pr['model']==model)].drop(['subject', 'model'], 1).mean(axis=0), ignore_index=True)
+            # means.insert(0, 'target', pr['target'].unique())
+            # means = means[np.hstack(['target', means['target'].values])]
+            # plt.figure()
+            # plt.imshow(means.drop('target', 1), vmin=0, vmax=1, cmap=get_model_cmap(model))
+            # plt.colorbar()
+            # plt.xlabel('Predicted words')
+            # plt.ylabel('Targets (folds)')
+            # #plt.xticks(range(12), [i for i in options],  rotation=45)
+            # plt.xticks(range(12), [i for i in means['target'].values], rotation=45)
+            # plt.yticks(range(12), [i for i in means['target'].values])
+            # plt.title(model)
+            # if args.plot_dir is not None:
+            #     plt.savefig(os.path.join(args.plot_dir,
+            #                  'fig5b_eval_classify_prob_matrices_meansubj_' + model + '_' + args.clf_type + input_type + '.pdf'), dpi=160, transparent=True)
+            #     plt.close()
 
 
         temp = prob[prob['model']==model]
@@ -76,6 +76,8 @@ def main(args):
         for target in temp['target'].unique():
             maxprob[model].extend(temp[temp['target']==target][target])
             maxprob_brain[model].extend(temp_brain[temp_brain['target']==target][target])
+
+    # np.array(maxprob['densenet']).reshape(12, 5)
 
     print('seq2seq - mlp: ', ttest_rel(maxprob['seq2seq'], maxprob['mlp']))
     w = wilcoxon(np.array(maxprob['seq2seq'])-np.array(maxprob['mlp']), alternative='greater', zero_method='zsplit')

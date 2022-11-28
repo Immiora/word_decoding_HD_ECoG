@@ -58,6 +58,7 @@ def plot_box_acc(data, floors=None, ceilings=None, title='', ylim = (0, 1), plot
     colors = sns.color_palette()[:3]
     n = len(data['sub'].unique())
     m = len(data['file'].unique())
+    # m = len(data['word'].unique())
     for box in range(3):
         print(box)
         pos = ax.get_children()[box].get_offsets().data
@@ -81,6 +82,7 @@ def plot_box_acc(data, floors=None, ceilings=None, title='', ylim = (0, 1), plot
 
 def main(args):
     res = pd.read_csv(op.join(args.res_dir, 'results_avg_over_12words.csv'), index_col=[0])
+    # res = pd.read_csv(op.join(args.res_dir, 'results_avg_over_subjs.csv'), index_col=[0])
     res_perm = pd.read_csv(op.join(args.res_dir, 'results_avg_over_12words_avg_over_subjs_perm.csv'), index_col=[0])
 
     for s in [i for i in range(1, 6)]:

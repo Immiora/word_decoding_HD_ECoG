@@ -125,7 +125,7 @@ class DenseNet3(nn.Module):
     def forward(self, x):
         if x.shape[-1] < 12:
             p = 12 - x.shape[-1]
-            p1 = int(p/2)
+            p1 = int(p/2) # RuntimeError: Integer division of tensors using div or / is no longer supported, and in a future release div will perform true division as in Python 3. Use true_divide or floor_divide (// in Python) instead
             x = F.pad(x, ([p1, p-p1]))
         out = self.conv1(x)
         out = self.trans1(self.block1(out))

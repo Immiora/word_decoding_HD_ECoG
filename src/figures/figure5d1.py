@@ -109,13 +109,16 @@ def main(args):
 
         for model in args.model:
             for input in ['reconstructed']:
-                baseline = results[(results['case']==args.clf_type) & (results['input']==input) &
-                                        (results['model']==model) &
-                                        (results['trial']=='permutation')]['accuracy'].values
-                val = results[(results['case'] == args.clf_type) & (results['input']==input) &
-                                   (results['trial']=='real') &
-                                   (results['model'] == model)]['accuracy'].mean()
-                print(args.clf_type + ' & ' + model + ' & ' + input + ' pval: ' + str(get_stat_pval(val, baseline)))
+                for trial in ['non-optimized', 'optimized']:
+                    baseline = results[(results['case']==args.clf_type) & (results['input']==input) &
+                                            (results['model']==model) &
+                                            (results['trial']=='permutation')]['accuracy'].values
+                    val = results[(results['case'] == args.clf_type) & (results['input']==input) &
+                                       (results['trial']==trial) &
+                                       (results['model'] == model)]['accuracy'].mean()
+                    print(args.clf_type + ' & ' + model +
+                                          ' & ' + input +
+                                          ' & ' + trial + ' pval: ' + str(get_stat_pval(val, baseline)))
 
 
 

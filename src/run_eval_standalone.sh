@@ -3,7 +3,7 @@
 # -t jip_janneke \
 # -s subject \
 # -o /Fridge/users/julia/project_decoding_jip_janneke/results/optuna \
-# -m mlp \
+# -m seq2seq \
 # -c 499 \
 # -n 12
 # -l 0

@@ -126,6 +126,16 @@ def load_pearson_df(args):
                 # UNCOMMENT THIS WHEN PERMUTATIONS ARE DONE
                 if itrial == 1:  # best_trial
                     b = pd.read_csv(
+                        op.join(trial_dir,
+                                'eval_n_folds' + str(args.n_folds) + '_pearsonr'+ '_audio_ceil.csv'),
+                        index_col=[0])
+                    b['subject'] = subject
+                    b['model'] = model
+                    b['trial'] = 'ceiling'
+                    b['pearsonr'] = b['r']
+                    res_pearsonr = res_pearsonr.append(pd.DataFrame(b))
+
+                    b = pd.read_csv(
                         op.join(trial_dir, 'eval_n_folds' + str(args.n_folds) + '_pearsonr'+'_perm'+file_tag+'.csv'),
                         index_col=[0])
                     b['subject'] = subject
@@ -144,9 +154,9 @@ def main(args):
     # plot
     plot_metric_boxplot(metric='pearsonr',
                         data=res_pearsonr[res_pearsonr['trial'].isin(['optimized', 'non-optimized'])],
-                        ceilings=None,
+                        ceilings=res_pearsonr[res_pearsonr['trial']=='ceiling'],
                         floors=res_pearsonr[res_pearsonr['trial'] == 'permutation'],
-                        title='fig4b_eval_pearsonr' + '_with_bounds' + file_tag + '_opt_non-opt',
+                        title='fig4b_eval_pearsonr' + '_with_bounds' + file_tag + '_opt_non-opt_ceil',
                         ylim=(-.25, 1),
                         plotdir=args.plot_dir)
 
@@ -194,7 +204,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Parameters for sound generation')
     parser.add_argument('--task', '-t', type=str)
     parser.add_argument('--subject_code', '-s', type=str,  nargs="+",
-                        choices=['sgf0', 'l4cf', 'jvu9', 'zk0v', 'xoop'],
+                        choices=['sgf0', 'l4cf', 'jvu9', 'zk0v', 'xoop', 'fvxs'],
                         default=['sgf0', 'l4cf', 'jvu9', 'zk0v', 'xoop'],
                         help='Subject to run')
     parser.add_argument('--model', '-m', type=str,  nargs="+",

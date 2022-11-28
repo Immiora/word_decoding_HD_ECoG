@@ -4,8 +4,8 @@ def select_model(args, train_loader, device):
     # set up model
     if args.model_type == 'densenet':
         from models.densenet_pool import make_model
-    elif args.model_type == 'resnet':
-        from models.resnet import make_model
+    # elif args.model_type == 'resnet':
+    #     from models.resnet import make_model
     elif args.model_type == 'mlp':
         from models.mlp import make_model
     elif args.model_type == 'seq2seq':
