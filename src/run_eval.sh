@@ -91,7 +91,8 @@ echo 'best trial: '$best_id
 
 source /home/julia/Documents/Python/anaconda3/etc/profile.d/conda.sh
 
-for trial in $best_id `seq 0 0`; do
+for trial in `seq 0 0`; do
+#for trial in $best_id `seq 0 0`; do
 #for trial in $best_id `seq 0 9`; do
 #for trial in $best_id; do
   trial_path=$optuna_root/$trial

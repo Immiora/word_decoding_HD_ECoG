@@ -2,10 +2,10 @@
 # bash run_all.sh \
 # -t jip_janneke \
 # -s subject \
-# -o /Fridge/users/julia/project_decoding_jip_janneke/results/optuna \
+# -o /Fridge/users/julia/project_decoding_jip_janneke/results/optuna_v2 \
 # -m seq2seq \
 # -e 500 \
-# -n 2 \
+# -n 1 \
 # -j 1
 
 POSITIONAL=()

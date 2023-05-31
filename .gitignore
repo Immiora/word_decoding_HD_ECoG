@@ -7,9 +7,16 @@ __pycache__/
 !.gitignore
 !README.md
 !src/
+!vocoder/
 src/*
 !src/models
 !src/figures
+!src/stats
+!src/utils
+!src/audio_contamination
+!src/synthesize_audio
+!src/train_decoders
+!src/evaluate_decoders
 !src/run*.sh
 !src/beh_exp
 !src/beh_exp/*
